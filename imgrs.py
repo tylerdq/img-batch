@@ -18,75 +18,79 @@ def cli():
 
 
 @cli.command()
-@click.argument('unit')
-@click.option('--width', '-w', default=-1,
-              help='Specify resized image width (in UNIT).')
-@click.option('--height', '-h', default=-1,
-              help='Specify resized image height (in UNIT).')
-@click.option('--quality', '-q', default=90,
+@click.argument('pixels', type=int)
+@click.option('--quality', '-q', default=90, type=int,
               help='Specify resized image quality (0-100).')
-def pixel(unit, width, height, quality):
-    """Utility to change image dimensions without cropping."""
-    mkdir('resized')
+def width(pixels, quality):
+    """\b
+    Resize image(s) proportionally, given desired width.
+    Requires PIXELS as an integer greater than 0."""
+    if pixels == 0:
+        click.echo('PIXELS must be an integer greater than 0.')
+        sys.exit()
+    dirname = 'w' + str(pixels) + 'q' + str(quality)
+    mkdir(dirname)
     for file in os.listdir(cwd):
         if file.lower().endswith(('.jpg', '.png', '.jpeg')):
             with Image.open(file) as image:
                 origWidth, origHeight = image.size
-                # if width != -1 and height != -1:
-                if width > 0:  # FOR DEBUGGING. REMOVE.
-                    if unit == 'pixel':
-                        newWidth = width
-                        newHeight = height
-                        if width == -1:
-                            newHeight = height
-                            newWidth = origWidth / origHeight * height
-                        if height == -1:
-                            newWidth = width
-                            newHeight = origHeight / origWidth * width
-                else:
-                    newWidth = origWidth
-                    newHeight = origHeight
-                if newWidth > origWidth or newHeight > origHeight:
-                    input(file + ' is too small (output will be pixelated) <Enter> to continue.')
-                ### Use TBD function to handle proportions of dimensions?
-                image = image.resize((int(newWidth), int(newHeight)), Image.ANTIALIAS)
-                os.chdir('resized')
+                newWidth = pixels
+                newHeight = origHeight / origWidth * pixels
+                image = image.resize((int(newWidth), int(newHeight)),
+                                     Image.ANTIALIAS)
+                os.chdir(dirname)
                 image.save(file, 'JPEG', quality=quality)
                 os.chdir(cwd)
 
 
 @cli.command()
-@click.argument('percentage')
-@click.option('--quality', '-q', default=90,
+@click.argument('pixels', type=int)
+@click.option('--quality', '-q', default=90, type=int,
+              help='Specify resized image quality (0-100).')
+def height(pixels, quality):
+    """\b
+    Resize image(s) proportionally, given desired height.
+    Requires PIXELS as an integer greater than 0."""
+    if pixels == 0:
+        click.echo('PIXELS must be an integer greater than 0.')
+        sys.exit()
+    dirname = 'h' + str(pixels) + 'q' + str(quality)
+    mkdir(dirname)
+    for file in os.listdir(cwd):
+        if file.lower().endswith(('.jpg', '.png', '.jpeg')):
+            with Image.open(file) as image:
+                origWidth, origHeight = image.size
+                newHeight = pixels
+                newWidth = origWidth / origHeight * pixels
+                image = image.resize((int(newWidth), int(newHeight)),
+                                     Image.ANTIALIAS)
+                os.chdir(dirname)
+                image.save(file, 'JPEG', quality=quality)
+                os.chdir(cwd)
+
+
+@cli.command()
+@click.argument('percentage', type=int)
+@click.option('--quality', '-q', default=90, type=int,
               help='Specify resized image quality (1-99).')
 def percent(percentage, quality):
-    """Utility to resize image to be a percentage of original size."""
-    try:
-        percentage = int(percentage)
-    except ValueError:
-        click.echo('PERCENTAGE must be an integer greater than 0.')
-        sys.exit()
+    """\b
+    Resize image(s) to be a proportion of their original size.
+    Requires PERCENTAGE as an integer greater than 0."""
     if percentage == 0:
         click.echo('PERCENTAGE must be an integer greater than 0.')
         sys.exit()
-    if percentage >= 100:
-        while True:
-            answer = input('Percentage >99. Dimensions will be unchanged (if 100) or image pixelated (if >100).\nContinue? (y/n): ')
-            if answer == 'y':
-                break
-            elif answer == 'n':
-                click.echo('Exited with no conversion.')
-                sys.exit()
-
-    mkdir('resized')
+    dirname = str(percentage) + 'pq' + str(quality)
+    mkdir(dirname)
     for file in os.listdir(cwd):
         if file.lower().endswith(('.jpg', '.png', '.jpeg')):
             with Image.open(file) as image:
                 origWidth, origHeight = image.size
                 newWidth = origWidth * percentage / 100
                 newHeight = origHeight * percentage / 100
-                image = image.resize((int(newWidth), int(newHeight)), Image.ANTIALIAS)
-                os.chdir('resized')
+                image = image.resize((int(newWidth), int(newHeight)),
+                                     Image.ANTIALIAS)
+                os.chdir(dirname)
                 image.save(file, 'JPEG', quality=quality)
                 os.chdir(cwd)
 
