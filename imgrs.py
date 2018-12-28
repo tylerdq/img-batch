@@ -19,8 +19,8 @@ def cli():
 
 @cli.command()
 @click.argument('pixels', type=int)
-@click.option('--quality', '-q', default=90, type=int,
-              help='Specify resized image quality (0-100).')
+@click.option('--quality', '-q', default=75, type=click.IntRange(1, 95,
+              clamp=True), help='Specify resized image quality (0-100).')
 def width(pixels, quality):
     """\b
     Resize image(s) proportionally, given desired width.
@@ -45,8 +45,8 @@ def width(pixels, quality):
 
 @cli.command()
 @click.argument('pixels', type=int)
-@click.option('--quality', '-q', default=90, type=int,
-              help='Specify resized image quality (0-100).')
+@click.option('--quality', '-q', default=75, type=click.IntRange(1, 95,
+              clamp=True), help='Specify resized image quality (0-100).')
 def height(pixels, quality):
     """\b
     Resize image(s) proportionally, given desired height.
@@ -71,8 +71,8 @@ def height(pixels, quality):
 
 @cli.command()
 @click.argument('percentage', type=int)
-@click.option('--quality', '-q', default=90, type=int,
-              help='Specify resized image quality (1-99).')
+@click.option('--quality', '-q', default=75, type=click.IntRange(1, 95,
+              clamp=True), help='Specify resized image quality (1-95).')
 def percent(percentage, quality):
     """\b
     Resize image(s) to be a proportion of their original size.
