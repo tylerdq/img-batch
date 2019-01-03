@@ -39,7 +39,7 @@ def width(pixels, quality, dry):
             with Image.open(file) as image:
                 origWidth, origHeight = image.size
                 newWidth = pixels
-                newHeight = origHeight / origWidth * pixels
+                newHeight = int(round(origHeight / origWidth * pixels))
                 image = image.resize((int(newWidth), int(newHeight)),
                                      Image.ANTIALIAS)
                 if dry:
@@ -82,7 +82,7 @@ def height(pixels, quality, dry):
             with Image.open(file) as image:
                 origWidth, origHeight = image.size
                 newHeight = pixels
-                newWidth = origWidth / origHeight * pixels
+                newWidth = int(round(origWidth / origHeight * pixels))
                 image = image.resize((int(newWidth), int(newHeight)),
                                      Image.ANTIALIAS)
                 if dry:
