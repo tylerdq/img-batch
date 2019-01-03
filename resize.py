@@ -18,7 +18,7 @@ def cli():
 @cli.command()
 @click.argument('pixels', type=int)
 @click.option('--quality', '-q', default=75, type=click.IntRange(1, 95,
-              clamp=True), help='Specify resized image quality (0-100).')
+              clamp=True), help='Specify resized image quality (1-95).')
 @click.option('--dry', '-d', is_flag=True, help='Do a dry run (recommended to do first).')
 def width(pixels, quality, dry):
     """\b
@@ -61,7 +61,7 @@ def width(pixels, quality, dry):
 @cli.command()
 @click.argument('pixels', type=int)
 @click.option('--quality', '-q', default=75, type=click.IntRange(1, 95,
-              clamp=True), help='Specify resized image quality (0-100).')
+              clamp=True), help='Specify resized image quality (1-95).')
 @click.option('--dry', '-d', is_flag=True, help='Do a dry run (recommended to do first).')
 def height(pixels, quality, dry):
     """\b
