@@ -3,7 +3,8 @@ from glob import glob
 from PIL import Image
 
 cwd = os.getcwd()
-sizes = []
+oldSizes = []
+newSizes = []
 
 def mkdir(directory):
     try:
@@ -13,11 +14,11 @@ def mkdir(directory):
             raise
 
 
-def prep(value, dirpre, quality):
+def prep(value, dry, dirpre, quality):
     if value == 0:
         click.echo('Please use an integer greater than 0.')
         sys.exit()
-    else:
+    elif not dry:
         global dirname
         dirname = dirpre + str(value) + 'q' + str(quality)
         mkdir(dirname)
@@ -46,39 +47,46 @@ def cli():
               clamp=True), help='Specify resized image quality (1-95).')
 @click.option('--dry', '-d', is_flag=True, help=
               'Do a dry run (recommended to do first).')
-def pixel(side, value, quality, dry):
+@click.option('--verbose', '-v', is_flag=True, help=
+              'Verbose output with results of each image conversion.')
+def pixel(side, value, quality, dry, verbose):
     """\b
     Resize image(s) proportionally, given desired side length in pixels.
     Requires SIDE ("width" or "height").
     Requires VALUE (pixels) as an integer greater than 0."""
     dirpre = side[0]
-    prep(value, dirpre, quality)
+    prep(value, dry, dirpre, quality)
     globber()
     for index, file in enumerate(images, start=1):
         with Image.open(file) as im:
+            output = io.BytesIO()
+            im.save(output, 'JPEG')
+            oldSize = int(len(output.getvalue()))
+            output.close()
+            oldSizes.append(oldSize)
             if side == 'width':
                 newDim = int(round(im.height / im.width * value))
                 image = im.resize((int(value), int(newDim)),
                                  Image.ANTIALIAS)
             elif side == 'height':
                 newDim = int(round(im.width / im.height * value))
-                image = image.resize((int(newDim), int(value)),
+                image = im.resize((int(newDim), int(value)),
                                  Image.ANTIALIAS)
             else:
                 click.echo('Please specify side as "width" or "height".')
                 sys.exit()
-            if dry:
-                output = io.BytesIO()
-                image.save(output, 'JPEG', quality=quality)
-                contents = int(len(output.getvalue()))
-                output.close()
-                print(file + ' Original=' + str(im.width) + 'x' + str(im.height) + ' Resized=' + str(image.width) + 'x' + str(image.height) + ', ' + '~' + str(round(contents/1000)) + 'kb')
-                sizes.append(contents)
-            else:
+            output = io.BytesIO()
+            image.save(output, 'JPEG', quality=quality)
+            newSize = int(len(output.getvalue()))
+            output.close()
+            newSizes.append(newSize)
+            if not dry:
                 os.chdir(dirname)
                 image.save(file, 'JPEG', quality=quality)
                 os.chdir(cwd)
-    report(index, sizes)
+            if verbose:
+                print(file + ' - Original:' + str(im.width) + 'x' + str(im.height) + '=~' + str(round(oldSize/1000)) + 'kb' + '; Resized:' + str(image.width) + 'x' + str(image.height) + '=~' + str(round(newSize/1000)) + 'kb')
+    print(str(index) + ' total images (~' + str(round(sum(oldSizes)/1000)) + 'kb -> ~' + str(round(sum(newSizes)/1000)) + 'kb)')
 
 
 @cli.command()
