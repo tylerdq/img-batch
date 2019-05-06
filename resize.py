@@ -13,13 +13,13 @@ def mkdir(directory):
             raise
 
 
-def prep(value, dirpref, quality):
+def prep(value, dirpre, quality):
     if value == 0:
         click.echo('Please use an integer greater than 0.')
         sys.exit()
     else:
         global dirname
-        dirname = dirpref + str(value) + 'q' + str(quality)
+        dirname = dirpre + str(value) + 'q' + str(quality)
         mkdir(dirname)
 
 
@@ -40,6 +40,48 @@ def cli():
 
 
 @cli.command()
+@click.argument('side')
+@click.argument('value', type=int)
+@click.option('--quality', '-q', default=75, type=click.IntRange(1, 95,
+              clamp=True), help='Specify resized image quality (1-95).')
+@click.option('--dry', '-d', is_flag=True, help=
+              'Do a dry run (recommended to do first).')
+def pixel(side, value, quality, dry):
+    """\b
+    Resize image(s) proportionally, given desired side length in pixels.
+    Requires SIDE ("width" or "height").
+    Requires VALUE (pixels) as an integer greater than 0."""
+    dirpre = side[0]
+    prep(value, dirpre, quality)
+    globber()
+    for index, file in enumerate(images, start=1):
+        with Image.open(file) as im:
+            if side == 'width':
+                newDim = int(round(im.height / im.width * value))
+                image = im.resize((int(value), int(newDim)),
+                                 Image.ANTIALIAS)
+            elif side == 'height':
+                newDim = int(round(im.width / im.height * value))
+                image = image.resize((int(newDim), int(value)),
+                                 Image.ANTIALIAS)
+            else:
+                click.echo('Please specify side as "width" or "height".')
+                sys.exit()
+            if dry:
+                output = io.BytesIO()
+                image.save(output, 'JPEG', quality=quality)
+                contents = int(len(output.getvalue()))
+                output.close()
+                print(file + ' Original=' + str(im.width) + 'x' + str(im.height) + ' Resized=' + str(image.width) + 'x' + str(image.height) + ', ' + '~' + str(round(contents/1000)) + 'kb')
+                sizes.append(contents)
+            else:
+                os.chdir(dirname)
+                image.save(file, 'JPEG', quality=quality)
+                os.chdir(cwd)
+    report(index, sizes)
+
+
+@cli.command()
 @click.argument('value', type=int)
 @click.option('--quality', '-q', default=75, type=click.IntRange(1, 95,
               clamp=True), help='Specify resized image quality (1-95).')
@@ -48,8 +90,8 @@ def width(value, quality, dry):
     """\b
     Resize image(s) proportionally, given desired width.
     Requires VALUE (pixels) as an integer greater than 0."""
-    dirpref = 'w'
-    prep(value, dirpref, quality)
+    dirpre = 'w'
+    prep(value, dirpre, quality)
     globber()
     for index, file in enumerate(images, start=1):
         with Image.open(file) as image:
@@ -81,8 +123,8 @@ def height(value, quality, dry):
     """\b
     Resize image(s) proportionally, given desired height.
     Requires VALUE (pixels) as an integer greater than 0."""
-    dirpref = 'h'
-    prep(value, dirpref, quality)
+    dirpre = 'h'
+    prep(value, dirpre, quality)
     globber()
     for index, file in enumerate(images, start=1):
         with Image.open(file) as image:
@@ -114,8 +156,8 @@ def percent(value, quality, dry):
     """\b
     Resize image(s) to be a proportion of their original size.
     Requires VALUE (percentage) as an integer greater than 0."""
-    dirpref = 'p'
-    prep(value, dirpref, quality)
+    dirpre = 'p'
+    prep(value, dirpre, quality)
     globber()
     for index, file in enumerate(images, start=1):
         with Image.open(file) as image:
