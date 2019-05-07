@@ -7,7 +7,7 @@ images = glob('*.jpg')
 images.extend(glob('.*jpeg'))
 images.extend(glob('.*png'))
 if len(images) == 0:
-    click.echo('Please include some images to resize in your directory.')
+    click.echo('Please include some images to resize in your directory')
     sys.exit()
 
 def mkdir(directory):
@@ -19,12 +19,13 @@ def mkdir(directory):
 
 def prep(value, dry, dirpre, quality):
     if value == 0:
-        click.echo('Please use an integer greater than 0.')
+        click.echo('Please use an integer greater than 0')
         sys.exit()
     elif not dry:
         global dirname
         dirname = dirpre + str(value) + 'q' + str(quality)
         mkdir(dirname)
+    print(str(len(images)) + ' images to resize...')
 
 @click.group()
 def cli():
@@ -59,7 +60,7 @@ def pixel(side, value, quality, dry, verbose):
                 imNew = imOld.resize((int(newDim), int(value)),
                                  Image.ANTIALIAS)
             else:
-                click.echo('Please specify side as "width" or "height".')
+                click.echo('Please specify side as "width" or "height"')
                 sys.exit()
             output = io.BytesIO()
             imNew.save(output, 'JPEG', quality=quality)
@@ -72,8 +73,8 @@ def pixel(side, value, quality, dry, verbose):
                       + ' (' + str(round(oldSize)) + 'kb)' + ' -> ' +
                       str(imNew.width) + 'x' + str(imNew.height) + ' (' +
                       str(round(newSize)) + 'kb)')
-    print(str(index) + ' total images (' +
-          str(round(sum(oldSizes))) + 'kb -> ' +
+    print(str(round((1 - sum(newSizes) / sum(oldSizes)) * 100))
+          + '% ' + 'space savings (' + str(round(sum(oldSizes))) + 'kb -> ' +
           str(round(sum(newSizes))) + 'kb)')
 
 @cli.command()
@@ -108,8 +109,8 @@ def percent(value, quality, dry, verbose):
                       + ' (' + str(round(oldSize)) + 'kb)' + ' -> ' +\
                       str(imNew.width) + 'x' + str(imNew.height) + ' (' +
                       str(round(newSize)) + 'kb)')
-    print(str(index) + ' total images (' +
-          str(round(sum(oldSizes))) + 'kb -> ' +
+    print(str(round((1 - sum(newSizes) / sum(oldSizes)) * 100))
+          + '% ' + 'space savings (' + str(round(sum(oldSizes))) + 'kb -> ' +
           str(round(sum(newSizes))) + 'kb)')
 
 if __name__ == '__main__':
