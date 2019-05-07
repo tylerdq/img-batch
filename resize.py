@@ -45,9 +45,7 @@ def pixel(side, value, quality, dry, verbose):
     prep(value, dry, dirpre, quality)
     for index, file in enumerate(images, start=1):
         with Image.open(file) as imOld:
-            output = io.BytesIO()
-            imOld.save(output, 'JPEG')
-            oldSize = int(len(output.getvalue()))
+            oldSize = (os.stat(file).st_size)/1024
             oldSizes.append(oldSize)
             if side == 'width':
                 newDim = int(round(imOld.height / imOld.width * value))
@@ -62,42 +60,54 @@ def pixel(side, value, quality, dry, verbose):
                 sys.exit()
             output = io.BytesIO()
             imNew.save(output, 'JPEG', quality=quality)
-            newSize = int(len(output.getvalue()))
+            newSize = int(len(output.getvalue()))/1024
             newSizes.append(newSize)
             if not dry:
                 imNew.save(dirname + '/' + file, 'JPEG', quality=quality)
             if verbose:
-                print(file + ': ' + str(imOld.width) + 'x' + str(imOld.height) + ' (' + str(round(oldSize/1000)) + 'kb)' + ' -> ' + str(imNew.width) + 'x' + str(imNew.height) + ' (' + str(round(newSize/1000)) + 'kb)')
-    print(str(index) + ' total images (' + str(round(sum(oldSizes)/1000)) + 'kb -> ' + str(round(sum(newSizes)/1000)) + 'kb)')
+                print(file + ': ' + str(imOld.width) + 'x' + str(imOld.height)
+                      + ' (' + str(round(oldSize)) + 'kb)' + ' -> ' +
+                      str(imNew.width) + 'x' + str(imNew.height) + ' (' +
+                      str(round(newSize)) + 'kb)')
+    print(str(index) + ' total images (' +
+          str(round(sum(oldSizes))) + 'kb -> ' +
+          str(round(sum(newSizes))) + 'kb)')
 
 @cli.command()
 @click.argument('value', type=int)
 @click.option('--quality', '-q', default=75, type=click.IntRange(1, 95,
               clamp=True), help='Specify resized image quality (1-95).')
 @click.option('--dry', '-d', is_flag=True, help='Do a dry run (recommended to do first).')
-def percent(value, quality, dry):
+@click.option('--verbose', '-v', is_flag=True, help=
+              'Verbose output with results of each image conversion.')
+def percent(value, quality, dry, verbose):
     """\b
     Resize image(s) to a fraction of their original size.
     Requires VALUE (percentage) as an integer greater than 0."""
     dirpre = 'p'
-    prep(value, dirpre, quality)
+    prep(value, dry, dirpre, quality)
     for index, file in enumerate(images, start=1):
-        with Image.open(file) as image:
-            origWidth, origHeight = image.size
-            newWidth = int(round(origWidth * value / 100))
-            newHeight = int(round(origHeight * value / 100))
-            image = image.resize((newWidth, newHeight),
+        with Image.open(file) as imOld:
+            oldSize = (os.stat(file).st_size)/1024
+            oldSizes.append(oldSize)
+            newWidth = int(round(imOld.width * value / 100))
+            newHeight = int(round(imOld.height * value / 100))
+            imNew = imOld.resize((newWidth, newHeight),
                                  Image.ANTIALIAS)
-            if dry:
-                output = io.BytesIO()
-                image.save(output, 'JPEG', quality=quality)
-                contents = int(len(output.getvalue()))
-                output.close()
-                print(file + ' Original=' + str(origWidth) + 'x' + str(origHeight) + ' Resized=' + str(newWidth) + 'x' + str(newHeight) + ', ' + '~' + str(round(contents/1000)) + 'kb')
-                sizes.append(contents)
-            else:
-                image.save(dirname + '/' + file, 'JPEG', quality=quality)
-    report(index, sizes)
+            output = io.BytesIO()
+            imNew.save(output, 'JPEG', quality=quality)
+            newSize = int(len(output.getvalue()))/1024
+            newSizes.append(newSize)
+            if not dry:
+                imNew.save(dirname + '/' + file, 'JPEG', quality=quality)
+            if verbose:
+                print(file + ': ' + str(imOld.width) + 'x' + str(imOld.height)
+                      + ' (' + str(round(oldSize)) + 'kb)' + ' -> ' +\
+                      str(imNew.width) + 'x' + str(imNew.height) + ' (' +
+                      str(round(newSize)) + 'kb)')
+    print(str(index) + ' total images (' +
+          str(round(sum(oldSizes))) + 'kb -> ' +
+          str(round(sum(newSizes))) + 'kb)')
 
 if __name__ == '__main__':
     cli()
