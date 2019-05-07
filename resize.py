@@ -4,11 +4,8 @@ from PIL import Image
 
 oldSizes, newSizes = [], []
 images = glob('*.jpg')
-images.extend(glob('.*jpeg'))
-images.extend(glob('.*png'))
-if len(images) == 0:
-    click.echo('Please include some images to resize in your directory')
-    sys.exit()
+images.extend(glob('*.jpeg'))
+images.extend(glob('*.png'))
 
 def mkdir(directory):
     try:
@@ -25,6 +22,9 @@ def prep(value, dry, dirpre, quality):
         global dirname
         dirname = dirpre + str(value) + 'q' + str(quality)
         mkdir(dirname)
+    if len(images) == 0:
+        click.echo('Please include some images to resize in your directory')
+        sys.exit()
     print(str(len(images)) + ' images to resize...')
 
 @click.group()
