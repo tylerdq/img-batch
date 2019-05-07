@@ -6,6 +6,9 @@ oldSizes, newSizes = [], []
 images = glob('*.jpg')
 images.extend(glob('.*jpeg'))
 images.extend(glob('.*png'))
+if len(images) == 0:
+    click.echo('Please include some images to resize in your directory.')
+    sys.exit()
 
 def mkdir(directory):
     try:
