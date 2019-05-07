@@ -2,14 +2,14 @@
 
 img-batch is a set of CLI utilities for easily batch processing images.
 
-## Dependencies
+## Installation
 
-- [Python 3](https://www.python.org/downloads/)
-- [Pillow](https://pillow.readthedocs.io/en/5.3.x/)
-- [Click](http://click.palletsprojects.com/en/7.x/quickstart/)
+Install [Python 3](https://www.python.org/downloads/). Then [download](https://github.com/tylerdq/img-batch/archive/master.zip) or clone this repository and from the command line (Terminal, PowerShell, cmd, etc.) [`cd`](https://www.git-tower.com/learn/git/ebook/en/command-line/appendix/command-line-101) into the downloaded/cloned directory and run:
+
+`pip3 install -r requirements.txt` (only once per machine)
 
 ## Usage
 
-[Download](https://github.com/tylerdq/sympoiesis/archive/master.zip) or clone this repository. Place (copies of) the images you would like to process in the root folder of the repository. From a command line, [`cd`](https://www.git-tower.com/learn/git/ebook/en/command-line/appendix/command-line-101) into the repository, and run one of the commands below.
+Place (copies of) the images you would like to process in the root folder of the repository. Run:
 
-- To batch resize images: `python resize.py --help`
+`python resize.py --help`
