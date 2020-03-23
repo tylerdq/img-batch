@@ -1,5 +1,7 @@
 # img-batch
 
+NOTICE: This software is no longer developed. Recommend to use [imagemagick](https://imagemagick.org/index.php) instead.
+
 img-batch is a set of CLI utilities for easily batch processing images.
 
 ## Installation
